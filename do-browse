@@ -1,0 +1,53 @@
+#!/usr/bin/bash
+# 
+# Requirements: 
+# firefox
+# xdotool
+# wmctrl
+# curl
+
+#check reqs
+setup_reqs() {
+  echo "Installing requirements..."
+  yum install -y firefox && xdotool && wmctrl && curl
+}
+
+
+# finds good links
+do_pull() {
+  curl ${1} | \
+  grep -o '<a href=['"'"'"][^"'"'"']*['"'"'"]' | \
+  sed -e 's/^<a href=["'"'"']//' -e 's/["'"'"']$//' | \
+  grep "questions" | \
+  egrep -v "https|tagged"
+}
+
+
+
+# ~~~ MAIN ~~~
+#setup_reqs
+
+PAGE="https://stackoverflow.com/?tab=week"
+
+for i in `do_pull $PAGE`; 
+do
+
+  firefox $PAGE$i
+
+  # Focus on the new tab
+  wmctrl -a firefox
+
+  # scroll and sleep
+  for time in `seq 1 20`; 
+  do
+
+    xdotool key Down Down Down
+
+    sleep $(expr $RANDOM % 3)
+
+  done
+
+  # kills window
+  xdotool key Ctrl+w
+
+done
